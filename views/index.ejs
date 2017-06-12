@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src="http://cdn.bootcss.com/axios/0.16.2/axios.min.js"></script>
+    <script src="http://cdn.bootcss.com/react/15.5.4/react.min.js"></script>
+    <script src="http://cdn.bootcss.com/react/15.5.4/react-dom.min.js"></script>
+    <script src="http://cdn.bootcss.com/babel-core/5.8.38/browser.js"></script>
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+    <div id="root"></div>
+    <script type="text/babel">
+    class Header extends React.Component {
+      constructor() {
+        super()
+        this.state = {randomNum: 0}
+      }
+
+      componentDidMount() {
+        this.timerID = setInterval(() => this.tick(), 2000)
+      }
+
+      tick() {
+        var val = Math.ceil(Math.random() * 100 )
+        this.setState({randomNum: val})
+      }
+
+      render() {
+        return <p>{this.state.randomNum}</p>
+      }
+    }
+
+    ReactDOM.render(
+        <Header />,
+        document.getElementById("root")
+      );
+    </script>
+  </body>
+</html>
