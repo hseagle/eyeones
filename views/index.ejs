@@ -3,71 +3,12 @@
   <head>
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
-    <script src="http://cdn.bootcss.com/axios/0.16.2/axios.min.js"></script>
-    <script src="http://cdn.bootcss.com/react/15.5.4/react.min.js"></script>
-    <script src="http://cdn.bootcss.com/react/15.5.4/react-dom.min.js"></script>
-    <script src="http://cdn.bootcss.com/babel-core/5.8.38/browser.js"></script>
+    <link rel='stylesheet' href='stylesheets/main.css' />
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <title>EyeOnES</title>
   </head>
   <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
     <div id="root"></div>
-    <script type="text/babel">
-    class Header extends React.Component {
-      constructor() {
-        super()
-        this.state = {randomNum: 0, message: null}
-      }
-
-      componentWillMount() {
-        var self = this
-        axios.get("/test").then(function(response) {
-          console.log("fetch result for test api")
-          self.setState({message: response.data})
-        })
-      }
-
-      componentDidMount() {
-        this.timerID = setInterval(() => this.tick(), 2000)
-      }
-
-      tick() {
-        var self = this
-        axios.get("/test").then(function(response) {
-          console.log("fetch result for test api")
-          var val = Math.ceil(Math.random() * 100 )
-          self.setState({message: response.data, randomNum: val})         
-        })
-      }
-
-      render() {
-        if ( this.state.message != null ) {
-          var clusterInfo = this.state.message
-          var items = ["cluster_name", "status", "time_out", "number_of_nodes", "number_of_data_nodes", "active_shards", "active_primary_shards","number_of_pending_tasks", "timestamp"]
-        return (
-          <div>
-            <p>{this.state.randomNum}</p>
-            <br/>
-            <ol>
-             { items.map(function(item) {
-                return <li key={item}>{clusterInfo[item]}</li>
-             })}
-             </ol>
-          </div>
-        )
-        }else{
-          return (<p>
-          waiting for the ajax result
-          </p>
-          )
-        }
-      }
-    }
-
-    ReactDOM.render(
-        <Header />,
-        document.getElementById("root")
-      );
-    </script>
+    <script src="javascripts/main.js"></script>
   </body>
 </html>
