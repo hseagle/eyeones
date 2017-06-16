@@ -8,11 +8,12 @@ var bodyParser = require('body-parser');
 var index = require('./routes/index');
 var users = require('./routes/users');
 var db = require('./persistence/datastore')
-var clusterTbl = db.addCollection("cluster",{ttl: 20000, ttlInterval:1000})
-var eventTbl = db.addCollection("events", {ttl:3600*1000, ttlInterval: 5000})
-var indexTbl= db.addCollection("indices", {ttl:10000, ttlInterval: 2000})
-var shardTbl= db.addCollection("shards", {ttl:15000, ttlInterval: 2000})
-var nodeTbl= db.addCollection("nodes", {ttl:6000, ttlInterval: 2000})
+var clusterTbl = db.addCollection("cluster", { ttl: 20000, ttlInterval: 1000 })
+var eventTbl = db.addCollection("events", { ttl: 3600 * 1000, ttlInterval: 5000 })
+var indexTbl = db.addCollection("indices", {unique:'index', autoupdate:true})
+var shardTbl = db.addCollection("shards", {unique: 'uniq_id', autoupdate: true})
+var nodeTbl = db.addCollection("nodes",{unique:'name', autoupdate:true})
+var rateTbl = db.addCollection("rates", { unique: 'metrics_name', autoupdate: true })
 var axios = require('axios')
 
 var app = express();
@@ -33,31 +34,31 @@ app.use('/', index);
 app.use('/users', users);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+app.use(function (req, res, next) {
+    var err = new Error('Not Found');
+    err.status = 404;
+    next(err);
 });
 
 // error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+app.use(function (err, req, res, next) {
+    // set locals, only providing error in development
+    res.locals.message = err.message;
+    res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+    // render the error page
+    res.status(err.status || 500);
+    res.render('error');
 });
 
 //获取集群的最新状态
 function tick() {
-    axios.get("http://10.8.122.215:9200/_cluster/stats?format=json").then(function(response) {
+    axios.get("http://10.8.122.215:9200/_cluster/stats?format=json").then(function (response) {
         var clusterInfo = response.data
         //check whether the state is changed
         var oldState = clusterTbl.get(clusterTbl.maxRecord("timestamp").index)
-        if ( oldState!=null && ( oldState.status != clusterInfo.status ) )
-            eventTbl.insert({stateChanged: 1, timestamp: clusterInfo.timestamp})
+        if (oldState != null && (oldState.status != clusterInfo.status))
+            eventTbl.insert({ stateChanged: 1, timestamp: clusterInfo.timestamp })
         clusterTbl.insert(clusterInfo)
     })
     fetchIndicesInfo();
@@ -69,9 +70,27 @@ function tick() {
 function fetchIndicesInfo() {
     var esServerAddr = "http://10.8.122.215:9200"
     var indexFetchUrl = `${esServerAddr}/_cat/indices?h=index,status,health,docs.count,indexing.index_total,search.query_total,memory.total,pri,rep&format=json`
-    axios.get(indexFetchUrl).then( function(response) {
+    axios.get(indexFetchUrl).then(function (response) {
         var indices = response.data
-        indexTbl.insert(indices.filter(item=>item.status == "open"))
+        indices.forEach( function( item )  {
+            item['timestamp'] = (new Date()).getTime()
+            if ( item['status'] != 'open' ) return;
+            var seriesCols = ['indexing.index_total', 'search.query_total', 'timestamp']
+            if ( indexTbl.count({index: item.index}) == 0 ) {
+                seriesCols.forEach( function(col) { item[col] = [item[col]] } )
+                indexTbl.insert(item)
+            }else{
+                var targetIndex = indexTbl.findOne({index: item.index})
+                
+                seriesCols.forEach( function(col) {
+                    targetIndex[col].push(item[col])
+                    if ( targetIndex[col].length > 20 ) targetIndex[col].shift()
+                    delete item[col]
+                })
+               
+                Object.assign(targetIndex, item)
+            }
+        })
     })
 }
 
@@ -79,9 +98,19 @@ function fetchIndicesInfo() {
 function fetchShardInfo() {
     var esServerAddr = "http://10.8.122.215:9200"
     var shardFetchUrl = `${esServerAddr}/_cat/shards?h=index,shard,prirep,ip,node,indexing.index_total,search.query_total&format=json`
-    axios.get(shardFetchUrl).then( function(response) {
+    axios.get(shardFetchUrl).then(function (response) {
         var shards = response.data
-        shardTbl.insert(shards)
+        shards.forEach( function(shard) {
+            var uniqId = shard.index+'-'+shard.shard + '-' + shard.prirep;
+            if ( shardTbl.count({uniq_id: uniqId}) == 0 ) {
+                shard['uniq_id'] = uniqId
+                shardTbl.insert(shard)
+            }else{
+                var targetShard = shardTbl.findOne({uniq_id: uniqId})
+                Object.assign(targetShard, shard)
+            }
+        })
+        console.log(shardTbl.count())
     })
 }
 
@@ -89,13 +118,66 @@ function fetchShardInfo() {
 //获取nodes最新状态
 function fetchNodeInfo() {
     var esServerAddr = "http://10.8.122.215:9200"
-    var nodeFetchUrl = `${esServerAddr}/_cat/nodes?h=ip,name,load_5m,heap.percent,indexing.index_total,search.query_total,segments.count&format=json`
-    axios.get(nodeFetchUrl).then( function(response) {
+    var nodeFetchUrl = `${esServerAddr}/_cat/nodes?h=ip,name,load_5m,heap.percent,cpu,indexing.index_total,search.query_total,segments.count,node.role,master&format=json`
+    axios.get(nodeFetchUrl).then(function (response) {
         var nodes = response.data
-        nodeTbl.insert(nodes)
+        
+        
+        nodes.forEach( function(item) {
+            var queryCon = {name: item.name}
+            var shardNum = shardTbl.find({node: item.name}).length
+            console.log(JSON.stringify(item.name))
+            
+
+            item['shard_num'] = shardNum
+            item['timestamp'] = (new Date()).getTime()
+            console.log(`shardNum: ${shardNum}`)
+            console.log(item)
+            if ( nodeTbl.count( queryCon ) ==  0 ) {
+                var seriesCols = ['load_5m', 'heap.percent','cpu', 'indexing.index_total', 'search.query_total','timestamp']
+                
+                seriesCols.forEach(function(col){
+                    item[col] = [item[col]]
+                })
+                
+                var rateCols = ['indexing', 'query']
+                rateCols.forEach( col=> item[col] = [])
+                
+                nodeTbl.insert(item)
+            }else{
+                var targetNode = nodeTbl.findOne(queryCon)
+                var seriesCols = ['load_5m', 'heap.percent','cpu', 'indexing.index_total', 'search.query_total','timestamp']
+
+                seriesCols.forEach( function(col) {
+                    targetNode[col].push(item[col])
+                    if ( targetNode[col].length > 20 ) targetNode[col].shift()
+                    delete item[col]
+                })
+
+                var rateColMeta = [
+                    {'seriesCol':'indexing.index_total', 'rateCol':'indexing'}, 
+                    {'seriesCol':'search.query_total', 'rateCol':'query'}
+                ]
+
+                var timeDiffs = targetNode['timestamp'].slice(1).map((val,idx) => {
+                    return (val - targetNode['timestamp'][idx])
+                })
+
+                rateColMeta.map( function(item) {
+                    var series = targetNode[item.seriesCol]
+                    var rates = series.slice(1).map( function(val, idx) {
+                        return Math.ceil((val - series[idx])/(timeDiffs[idx]/1000))
+                    })
+                    targetNode[item.rateCol] = rates
+                    //delete item[rateColMeta.seriesCol]
+                })
+                Object.assign(targetNode, item)
+                //nodeTbl.update(targetNode)
+            }
+        })
     })
 }
 
-setInterval(tick,5000)
+setInterval(tick, 10000)
 
 module.exports = app;

@@ -24,7 +24,7 @@ router.get('/cluster/history', function(req, res, next) {
 
 router.get('/indices', function(req, res, next) {
   var index = db.getCollection('indices')
-  var jsonData = index.find()
+  var jsonData = index.chain().find().data()
   res.send(jsonData)
 })
 
