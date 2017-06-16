@@ -102,11 +102,27 @@ function fetchShardInfo() {
         var shards = response.data
         shards.forEach( function(shard) {
             var uniqId = shard.index+'-'+shard.shard + '-' + shard.prirep;
+	    shard['timestamp'] = (new Date()).getTime()
+	    var seriesCol = ['indexing.index_total', 'search.query_total', 'timestamp']
+	    
             if ( shardTbl.count({uniq_id: uniqId}) == 0 ) {
                 shard['uniq_id'] = uniqId
+
+		seriesCol.forEach(function(col) {
+		    shard[col] = [shard[col]]
+		})
                 shardTbl.insert(shard)
+		
             }else{
                 var targetShard = shardTbl.findOne({uniq_id: uniqId})
+
+		seriesCol.forEach(function(col) {
+		    targetShard[col].push(shard[col])
+
+		    if ( targetShard[col].length > 20 ) targetShard[col].shift()
+		    delete shard[col]
+		})
+		
                 Object.assign(targetShard, shard)
             }
         })
