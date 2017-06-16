@@ -69,12 +69,12 @@ function tick() {
 //获取indices的最新状态
 function fetchIndicesInfo() {
     var esServerAddr = "http://10.8.122.215:9200"
-    var indexFetchUrl = `${esServerAddr}/_cat/indices?h=index,status,health,docs.count,indexing.index_total,search.query_total,memory.total,pri,rep&format=json`
+    var indexFetchUrl = `${esServerAddr}/_cat/indices?bytes=b&h=index,status,health,docs.count,indexing.index_total,search.query_total,memory.total,pri,rep,fielddata.memory_size&format=json`
     axios.get(indexFetchUrl).then(function (response) {
         var indices = response.data
         indices.forEach( function( item )  {
             item['timestamp'] = (new Date()).getTime()
-            if ( item['status'] != 'open' ) return;
+            if ( item['status'] != 'open' || (item['index'].includes('.monitor') == true) ) return;
             var seriesCols = ['indexing.index_total', 'search.query_total', 'timestamp']
             if ( indexTbl.count({index: item.index}) == 0 ) {
                 seriesCols.forEach( function(col) { item[col] = [item[col]] } )
@@ -110,7 +110,6 @@ function fetchShardInfo() {
                 Object.assign(targetShard, shard)
             }
         })
-        console.log(shardTbl.count())
     })
 }
 
@@ -126,13 +125,10 @@ function fetchNodeInfo() {
         nodes.forEach( function(item) {
             var queryCon = {name: item.name}
             var shardNum = shardTbl.find({node: item.name}).length
-            console.log(JSON.stringify(item.name))
             
-
             item['shard_num'] = shardNum
             item['timestamp'] = (new Date()).getTime()
-            console.log(`shardNum: ${shardNum}`)
-            console.log(item)
+            
             if ( nodeTbl.count( queryCon ) ==  0 ) {
                 var seriesCols = ['load_5m', 'heap.percent','cpu', 'indexing.index_total', 'search.query_total','timestamp']
                 
@@ -178,6 +174,6 @@ function fetchNodeInfo() {
     })
 }
 
-setInterval(tick, 10000)
+setInterval(tick, 5000)
 
 module.exports = app;
