@@ -1,0 +1,15 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+.badge-number {
+  position: absolute;
+  top: 18px;
+  right: 9px;
+  text-align: center;
+  font-size: 9px;
+  padding: 2px 3px;
+  line-height: .19;
+}
