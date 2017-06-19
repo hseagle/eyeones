@@ -7,6 +7,7 @@ import 'jquery-sparkline/jquery.sparkline.js';
 import { Link } from 'react-router-dom';
 import ReactHighcharts from 'react-highcharts';
 import Highcharts from 'highcharts';
+import { SparklinesReferenceLine, Sparklines, SparklinesLine, SparklinesSpots, SparklinesCurve } from 'react-sparklines'
 
 class EsShard extends Component {
     constructor() {
@@ -64,7 +65,11 @@ class EsShard extends Component {
     }
 
     chartFormatter(cell, row) {
-        return (<div><strong>{cell.slice(-1)[0]}</strong>&nbsp;&nbsp;<span className="dynamicsparkline">{cell.toString()}</span></div>);
+        return (<div><strong>{cell.slice(-1)[0]}</strong>&nbsp;&nbsp;<Sparklines data={cell} limit={20} height={30}>
+            <SparklinesLine style={{stroke: "blue", strokeWidth: 3, fill: "none"}} />
+            <SparklinesSpots style={{ fill: "red"  }} />
+            <SparklinesReferenceLine type="mean" style={{stroke: "green", strokeWidth: 5, strokeDasharray: '2,2'}}/>
+        </Sparklines></div>)
     }
 
     numericSortFunc(a, b, order, sortField) {
@@ -150,7 +155,7 @@ class EsShard extends Component {
         var tableData = shards.filter(item => item['index'].includes(".monitor") == false)
 
         var bsTableOptions = {
-            sizePerPage: 15,
+            sizePerPage: 20,
             paginationShowsTotal: true,
             onSortChange: this.onSortChange.bind(this),
             defaultSortName: 'indexing',
