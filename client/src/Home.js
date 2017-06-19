@@ -3,8 +3,11 @@ import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import 'react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
 import $, { jQuery } from 'jquery';
 import axios from 'axios';
-import 'jquery-sparkline/jquery.sparkline.js';
 import { Link } from 'react-router-dom';
+import { SparklinesReferenceLine, Sparklines, SparklinesLine, SparklinesSpots, SparklinesCurve } from 'react-sparklines'
+import {LineChart, Line,XAxis, YAxis, CartesianGrid, Tooltip, Legend} from 'recharts'
+import {VictoryBar, VictoryLine} from 'victory'
+import moment from 'moment'
 
 //http://fooplugins.github.io/FooTable/docs/examples/bootstrap/collapse.html
 //FooTable is powerful as DataTables
@@ -55,8 +58,10 @@ class Home extends Component {
         return <Link to={targetUrl}>{cell}</Link>;
     }
 
+    componentWillUpdate() {
+    }
+
     componentDidUpdate() {
-        $('.inlinebar').sparkline('html', { type: 'line', barColor: 'blue' })
     }
 
     ratingSort(a, b, order, sortField) {
@@ -70,11 +75,11 @@ class Home extends Component {
     }
 
     chartFormatter(cell, row) {
-        if ( cell !=null && cell.length == 0 ) {
-            console.log("warning no data")
-            console.log(row)
-        }
-        return (<div><strong>{cell.slice(-1)[0]}</strong>&nbsp;&nbsp;<span className="inlinebar">{cell.toString()}</span></div>);
+        return (<div><strong>{cell.slice(-1)[0]}</strong>&nbsp;&nbsp;<Sparklines data={cell} limit={50} height={35}>
+            <SparklinesLine style={{stroke: "blue", strokeWidth: 3, fill: "none"}} />
+            <SparklinesSpots style={{ fill: "red"  }} />
+            <SparklinesReferenceLine type="mean" style={{stroke: "green", strokeWidth: 5, strokeDasharray: '2,2'}}/>
+        </Sparklines></div>)
     }
 
     numericSortFunc(a, b, order, sortField) {
@@ -99,58 +104,62 @@ class Home extends Component {
     //callback function after the sorting is changed
     onSortChange(sortName, sortOrder) {
         this.setState({ toggleUpdate: !this.state.toggleUpdate });
-        $('.inlinebar').sparkline('html', { type: 'bar' });
+    }
+
+    onSearchChange(searchText, colInfos, multiColumnSearch) {
+        //this.setState({ toggleUpdate: !this.state.toggleUpdate });
+        clearInterval(this.timerID)
+        console.log("onSearchChange is called")
     }
 
     //callback function while the search contents is changed
-    afterSearch(searchText) {
-        //this.setState({toggleUpdate: !this.state.toggleUpdate});
-        console.log("Home react-bootstrap-table after search")
+    afterSearch(searchText, result) {
+        //$(this.getDOMNode()).sparkline('html',{type:'line', lineColor: 'red'})
     }
 
     onPageChange(page, sizePerPage) {
         console.log("onPageChange is called")
-        //this.setState({ toggleUpdate: !this.state.toggleUpdate, page: page, sizePerPage: sizePerPage })
     }
 
-    //var colNames = "ip heap ram cpu load.1m load.5m load.15m role master name".split(/\s+/);
     render() {
         var nodes = this.state.nodes
 
         if (nodes.length == 0) return (<div><p></p></div>);
-
-        
+        console.log("render is called")
 
         var bsTableOptions = {
             sizePerPage: 20,
             paginationShowsTotal: true,
             defaultSortName: 'load_5m',
             onSortChange: this.onSortChange.bind(this),
+            onSearchChange: this.onSearchChange.bind(this),
+            afterSearch: this.afterSearch.bind(this),
             defaultSortOrder: 'desc'
         }
 
-        nodes.forEach( node => {
+        nodes.forEach(node => {
             var timeSeries = node.timestamp
-            var timeDiffs = timeSeries.slice(1).map((val,idx) => { return Math.ceil((val - timeSeries[idx])/1000) })
+            var timeDiffs = timeSeries.slice(1).map((val, idx) => { return Math.ceil((val - timeSeries[idx]) / 1000) })
 
-            var rate_meta = [ 
-                {source_field: 'indexing.index_total', target_field:'indexing'},
-                {source_field: 'search.query_total', target_field:'search'}
-                ]
+            var rate_meta = [
+                { source_field: 'indexing.index_total', target_field: 'indexing' },
+                { source_field: 'search.query_total', target_field: 'search' }
+            ]
 
-            rate_meta.forEach( item => {
+            rate_meta.forEach(item => {
                 var series = node[item.source_field]
-                var rates= series.slice(1).map((val,idx) => {
-                    return Math.ceil((val - series[idx])/timeDiffs[idx])
+                var rates = series.slice(1).map((val, idx) => {
+                    return Math.ceil((val - series[idx]) / timeDiffs[idx])
                 })
                 node[item.target_field] = rates
             })
         })
 
+        
         var column_meta = {
             'key': ['name'],
             'rate': ['load_5m', 'heap.percent', 'cpu', 'indexing', 'search'],
-            'others': ['ip', 'node.role', 'master','shard_num','disk.avail']
+            'others': ['ip', 'node.role', 'master', 'shard_num', 'disk.avail']
         }
 
         var keyColumn = column_meta['key'].map(col => {
@@ -167,9 +176,43 @@ class Home extends Component {
 
         var columns = keyColumn.concat(rateColumn).concat(otherColumn)
         var tableData = nodes
-        
+
+        const data = [
+                    {quarter: 1, earnings: 13000},
+                    {quarter: 2, earnings: 16500},
+                    {quarter: 3, earnings: 14250},
+                    {quarter: 4, earnings: 19000}
+                ];
+
+        var indexingSeries = tableData[0].indexing.map((val, idx) => {
+           var indexing = tableData.map(node=>node.indexing[idx]).reduce((a,b)=> {return a+b})
+           var search = tableData.map(node=>node.search[idx]).reduce((a,b)=> {return a+b})
+           var timeLabel = moment(new Date(tableData[0].timestamp[idx])).format('hh:mm:ss')
+           return {idx:timeLabel, indexing: indexing, search: search}
+        })
+
         return (
             <div className="col-lg-11" >
+                <div className="row">
+                    <div className="col-lg-6">
+                        <LineChart width={650} height={300} data={indexingSeries}>
+                            <XAxis dataKey="idx" />
+                            <YAxis />
+                            <Line type="monotone" dataKey="indexing" stroke="#8884d8" isAnimationActive={false}/>
+                            <Legend />
+                            <Tooltip />
+                        </LineChart>
+                    </div>
+                    <div className="col-lg-6">
+                        <LineChart width={650} height={300} data={indexingSeries}>
+                            <XAxis dataKey="idx" />
+                            <YAxis />
+                            <Line type="monotone" dataKey="search" stroke="#82ca9d" isAnimationActive={false}/>
+                            <Legend />
+                            <Tooltip />
+                        </LineChart>
+                    </div>
+                </div>
                 <BootstrapTable data={tableData} striped hover search options={bsTableOptions}>
                     {columns}
                 </BootstrapTable>
