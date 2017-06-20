@@ -126,25 +126,15 @@ class EsNodeDetail extends Component {
             
             return (<div className="col-lg-6">
                     <ResponsiveContainer width='95%' aspect={5.0/1.5}>
-                    <AreaChart data={chartData.slice(1)}
+                    <LineChart data={chartData.slice(1)}
                         margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                        <defs>
-                            <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-                                <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
-                            </linearGradient>
-                            <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
-                                <stop offset="95%" stopColor="#82ca9d" stopOpacity={0} />
-                            </linearGradient>
-                        </defs>
                         <XAxis dataKey="timestamp" tickFormatter={dateFormat}/>
                         <YAxis tickFormatter={unitConvert} />
                         <CartesianGrid strokeDasharray="3 3" />
                         <Tooltip />
                         <Legend verticalAlign="top"/>
-                        <Area type="monotone" dataKey={rateName} stroke="Lime" fillOpacity={1} fill="Coral" />
-                    </AreaChart>
+                        <Line type="monotone" dataKey={rateName} stroke="blue" fillOpacity={1} fill="Coral" isAnimationActive={false} />
+                    </LineChart>
                     </ResponsiveContainer>
                     </div>)
         })
