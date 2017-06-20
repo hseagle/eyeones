@@ -21,6 +21,7 @@ class EsNodeDetail extends Component {
 
     componentWillMount() {
         console.log(this.props.match.params)
+        this.setState({nodename: this.props.match.params.nodeid})
     }
 
     componentDidMount() {
@@ -172,6 +173,12 @@ class EsNodeDetail extends Component {
 
         return (
             <div className="col-lg-11">
+                <div className="row">
+                        <ol className="breadcrumb">
+                            <li><Link to="/nodes">Nodes</Link></li>
+                            <li className="active">{this.state.nodename}</li>
+                        </ol>
+                    </div>
                 <div className="row">
                     {histogramCharts}
                     {rateCharts}
