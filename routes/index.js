@@ -50,7 +50,7 @@ router.get('/nodestats/:nodename', function(req,res, next) {
   console.log(req.params)
   var nodeName = req.params.nodename
   var nodeStatsTbl = db.getCollection('nodeStats')
-  var matchedNodes = nodeStatsTbl.find({name: nodeName})
+  var matchedNodes = nodeStatsTbl.chain().find({name: nodeName}).simplesort('timestamp').data()
   res.send(matchedNodes)
 })
 
