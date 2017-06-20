@@ -5,7 +5,7 @@ import $, { jQuery } from 'jquery';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { SparklinesReferenceLine, Sparklines, SparklinesLine, SparklinesSpots, SparklinesCurve } from 'react-sparklines'
-import {LineChart, Line,XAxis, YAxis, CartesianGrid, Tooltip, Legend} from 'recharts'
+import {ResponsiveContainer, LineChart, Line,XAxis, YAxis, CartesianGrid, Tooltip, Legend} from 'recharts'
 import {VictoryBar, VictoryLine} from 'victory'
 import moment from 'moment'
 
@@ -170,27 +170,30 @@ class Home extends Component {
            return {idx:timeLabel, indexing: indexing, search: search}
         })
 
+
+        var chartKeys = ["indexing", "search"]
+        var chartElements = chartKeys.map( item => {
+            return  (
+                <div className="col-lg-6">
+                    <ResponsiveContainer width='100%' aspect={5.0/2.0}>
+                        <LineChart width={650} height={300} 
+                            margin={{ top: 10, right: 20, left: 10, bottom: 0 }} 
+                            data={indexingSeries}>
+                            <XAxis dataKey="idx" />
+                            <YAxis />
+                            <Line type="monotone" dataKey={item} stroke="#8884d8" isAnimationActive={false}/>
+                            <Legend />
+                            <Tooltip />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
+            )
+        })
+
         return (
             <div className="col-lg-11" >
                 <div className="row">
-                    <div className="col-lg-6">
-                        <LineChart width={650} height={300} data={indexingSeries}>
-                            <XAxis dataKey="idx" />
-                            <YAxis />
-                            <Line type="monotone" dataKey="indexing" stroke="#8884d8" isAnimationActive={false}/>
-                            <Legend />
-                            <Tooltip />
-                        </LineChart>
-                    </div>
-                    <div className="col-lg-6">
-                        <LineChart width={650} height={300} data={indexingSeries}>
-                            <XAxis dataKey="idx" />
-                            <YAxis />
-                            <Line type="monotone" dataKey="search" stroke="#82ca9d" isAnimationActive={false}/>
-                            <Legend />
-                            <Tooltip />
-                        </LineChart>
-                    </div>
+                    {chartElements}
                 </div>
                 <BootstrapTable data={tableData} striped hover search options={bsTableOptions}>
                     {columns}

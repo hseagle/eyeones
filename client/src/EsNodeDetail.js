@@ -24,11 +24,9 @@ class EsNodeDetail extends Component {
     }
 
     componentDidMount() {
-        this.timerID = setInterval(() => this.tick(), 5000);
+        this.timerID = setInterval(() => this.tick(), 10000);
     }
 
-
-    //take the history series data and plotting the chart immiediately
     componentDidUpdate() {
     }
 
@@ -125,9 +123,9 @@ class EsNodeDetail extends Component {
             }    
             
             return (<div className="col-lg-6">
-                    <ResponsiveContainer width='95%' aspect={5.0/1.5}>
+                    <ResponsiveContainer width='100%' aspect={6.0/1.5}>
                     <LineChart data={chartData.slice(1)}
-                        margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                        margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
                         <XAxis dataKey="timestamp" tickFormatter={dateFormat}/>
                         <YAxis tickFormatter={unitConvert} />
                         <CartesianGrid strokeDasharray="3 3" />
@@ -148,9 +146,9 @@ class EsNodeDetail extends Component {
                 return value
             }
             return (<div className="col-lg-6">
-                    <ResponsiveContainer width='95%' aspect={5.0/1.5}>
+                    <ResponsiveContainer width='100%' aspect={6.0/1.5}>
                     <AreaChart data={chartData}
-                        margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                        margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
                         <defs>
                             <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
@@ -166,7 +164,7 @@ class EsNodeDetail extends Component {
                         <CartesianGrid strokeDasharray="3 3" />
                         <Tooltip />
                         <Legend verticalAlign="top"/>
-                        <Area type="monotone" dataKey={metric.name} stroke="Lime" fillOpacity={1} fill="SeaGreen" />
+                        <Area type="monotone" dataKey={metric.name} stroke="#8884d8" fillOpacity={1} fill="url(#colorUv)" />
                     </AreaChart>
                     </ResponsiveContainer>
                     </div>)
