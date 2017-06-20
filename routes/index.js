@@ -40,4 +40,18 @@ router.get('/nodes', function(req, res, next) {
   res.send(jsonData)
 })
 
+router.get('/nodestats', function(req,res,next) {
+  var nodeStats = db.getCollection('nodeStats')
+  var jsonData = nodeStats.chain().find().limit(1).data()
+  res.send(jsonData)
+})
+
+router.get('/nodestats/:nodename', function(req,res, next) {
+  console.log(req.params)
+  var nodeName = req.params.nodename
+  var nodeStatsTbl = db.getCollection('nodeStats')
+  var matchedNodes = nodeStatsTbl.find({name: nodeName})
+  res.send(matchedNodes)
+})
+
 module.exports = router;

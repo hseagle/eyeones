@@ -44,8 +44,8 @@ class EsIndex extends Component {
     componentWillReceiveProps(nextProps) {
     }
 
-    nodeNameFormatter(cell, row) {
-        var targetUrl = "/nodedetail/" + cell;
+    indexFormatter(cell, row) {
+        var targetUrl = "/indexdetail/" + cell;
         return <Link to={targetUrl}>{cell}</Link>;
     }
 
@@ -140,7 +140,7 @@ class EsIndex extends Component {
         }
 
         var keyColumn = column_meta['key'].map(col => {
-            return <TableHeaderColumn isKey dataField={col} width='220px'>{col}</TableHeaderColumn>
+            return <TableHeaderColumn isKey dataField={col} dataFormat={this.indexFormatter} width='220px'>{col}</TableHeaderColumn>
         })
 
         var rateColumn = column_meta['rate'].map(col => {

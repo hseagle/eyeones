@@ -14,6 +14,7 @@ var indexTbl = db.addCollection("indices", { unique: 'index', autoupdate: true }
 var shardTbl = db.addCollection("shards", { unique: 'uniq_id', autoupdate: true })
 var nodeTbl = db.addCollection("nodes", { unique: 'name', autoupdate: true })
 var rateTbl = db.addCollection("rates", { unique: 'metrics_name', autoupdate: true })
+var nodeStatsTbl = db.addCollection("nodeStats",{ttl: 600 * 1000, ttlInterval: 1000})
 var axios = require('axios')
 
 var app = express();
@@ -191,6 +192,20 @@ function fetchNodeInfo() {
     })
 }
 
+
+function fetchNodeStats() {
+    var fetchUrl=`${esServerAddr}/_nodes/stats`
+    axios.get(fetchUrl).then(response => {
+        var jsonData = response.data
+        var statsData = jsonData.nodes
+        Object.keys(statsData).forEach( function(id) {
+            nodeStatsTbl.insert(statsData[id])
+        })
+    })
+}
+
 setInterval(tick, 5000)
+
+setInterval(fetchNodeStats, 10000)
 
 module.exports = app;

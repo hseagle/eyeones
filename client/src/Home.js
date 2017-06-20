@@ -106,17 +106,6 @@ class Home extends Component {
         this.setState({ toggleUpdate: !this.state.toggleUpdate });
     }
 
-    onSearchChange(searchText, colInfos, multiColumnSearch) {
-        //this.setState({ toggleUpdate: !this.state.toggleUpdate });
-        clearInterval(this.timerID)
-        console.log("onSearchChange is called")
-    }
-
-    //callback function while the search contents is changed
-    afterSearch(searchText, result) {
-        //$(this.getDOMNode()).sparkline('html',{type:'line', lineColor: 'red'})
-    }
-
     onPageChange(page, sizePerPage) {
         console.log("onPageChange is called")
     }
@@ -131,9 +120,6 @@ class Home extends Component {
             sizePerPage: 20,
             paginationShowsTotal: true,
             defaultSortName: 'load_5m',
-            onSortChange: this.onSortChange.bind(this),
-            onSearchChange: this.onSearchChange.bind(this),
-            afterSearch: this.afterSearch.bind(this),
             defaultSortOrder: 'desc'
         }
 
@@ -176,13 +162,6 @@ class Home extends Component {
 
         var columns = keyColumn.concat(rateColumn).concat(otherColumn)
         var tableData = nodes
-
-        const data = [
-                    {quarter: 1, earnings: 13000},
-                    {quarter: 2, earnings: 16500},
-                    {quarter: 3, earnings: 14250},
-                    {quarter: 4, earnings: 19000}
-                ];
 
         var indexingSeries = tableData[0].indexing.map((val, idx) => {
            var indexing = tableData.map(node=>node.indexing[idx]).reduce((a,b)=> {return a+b})
