@@ -124,7 +124,7 @@ class Home extends Component {
         }
 
         nodes.forEach(node => {
-            var timeSeries = node.timestamp
+            var timeSeries = node.timestamp.sort((a,b) => (a>b))
             var timeDiffs = timeSeries.slice(1).map((val, idx) => { return Math.ceil((val - timeSeries[idx]) / 1000) })
 
             var rate_meta = [
@@ -170,18 +170,26 @@ class Home extends Component {
            return {idx:timeLabel, indexing: indexing, search: search}
         })
 
+        const numberConverter = ( val ) => { 
+            var THRESHOLD_NUMBER = 100**2; 
+            if ( Math.abs(Number(val)) > THRESHOLD_NUMBER ) {
+                 return ( Math.ceil(val/1000) + "K" )
+            }else
+                return val
+        }
 
         var chartKeys = ["indexing", "search"]
         var chartElements = chartKeys.map( item => {
             return  (
                 <div className="col-lg-6">
-                    <ResponsiveContainer width='100%' aspect={5.0/2.0}>
-                        <LineChart width={650} height={300} 
+                    <ResponsiveContainer width='100%' aspect={6.0/2.0}>
+                        <LineChart 
                             margin={{ top: 10, right: 20, left: 10, bottom: 0 }} 
                             data={indexingSeries}>
                             <XAxis dataKey="idx" />
-                            <YAxis />
-                            <Line type="monotone" dataKey={item} stroke="#8884d8" isAnimationActive={false}/>
+                            <YAxis tickFormatter={numberConverter}/>
+                            <Line type="linear" dataKey={item} stroke="yellowgreen" isAnimationActive={false} strokeWidth={2}/>
+                            <CartesianGrid strokeDasharray="3 3" />
                             <Legend />
                             <Tooltip />
                         </LineChart>

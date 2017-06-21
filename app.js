@@ -140,13 +140,13 @@ function fetchNodeInfo() {
     axios.get(nodeFetchUrl).then(function (response) {
         var nodes = response.data
 
-
+        var timestamp = (new Date()).getTime()
         nodes.forEach(function (item) {
             var queryCon = { name: item.name }
             var shardNum = shardTbl.find({ node: item.name }).length
 
             item['shard_num'] = shardNum
-            item['timestamp'] = (new Date()).getTime()
+            item['timestamp'] = timestamp
 
             if (nodeTbl.count(queryCon) == 0) {
                 var seriesCols = ['load_5m', 'heap.percent', 'cpu', 'indexing.index_total', 'search.query_total', 'timestamp']
