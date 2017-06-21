@@ -16,17 +16,15 @@ import { BrowserRouter, Route, Router, Link } from 'react-router-dom'
 class App extends Component {
     constructor() {
         super();
-        console.log("app constructor is called 6 ")
     }
 
     componentDidMount() {
-        console.log("app componentDidMount() is called");
     }
 
     componentWillMount() {
-        console.log("app component will mount")
     }
 
+    //主页面，渲染入口
     render() {
         return (
             <BrowserRouter>
