@@ -54,4 +54,20 @@ router.get('/nodestats/:nodename', function(req,res, next) {
   res.send(matchedNodes)
 })
 
+router.get('/indexstats', function(req, res, next) {
+    var indexStatsTbl = db.getCollection('indexStats')
+    var jsonData = indexStatsTbl.chain().find().limit(1).data()
+    res.send(jsonData)
+})
+
+router.get('/indexstats/:indexname', function(req,res, next) {
+  console.log(req.params)
+  var indexName = req.params.indexname
+  var indexStatsTbl = db.getCollection('indexStats')
+    var matchedIndices = indexStatsTbl.chain().find({indexname: indexName}).simplesort('timestamp').data()
+    console.log(matchedIndices)
+  res.send(matchedIndices)
+})
+    
+
 module.exports = router;
