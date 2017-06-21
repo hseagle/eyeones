@@ -70,9 +70,9 @@ class EsIndex extends Component {
             console.log(row)
         }
         return (<div><strong>{cell.slice(-1)[0]}</strong>&nbsp;&nbsp;<Sparklines data={cell} limit={50} height={35}>
-            <SparklinesLine style={{stroke: "blue", strokeWidth: 3, fill: "none"}} />
+            <SparklinesLine style={{stroke: "DodgerBlue", strokeWidth: 2, fill: "none"}} />
             <SparklinesSpots style={{ fill: "red"  }} />
-            <SparklinesReferenceLine type="mean" style={{stroke: "green", strokeWidth: 5, strokeDasharray: '2,2'}}/>
+            <SparklinesReferenceLine type="mean" style={{stroke: "green", strokeWidth: 3, strokeDasharray: '2,2'}}/>
         </Sparklines></div>)
     }
 
@@ -144,7 +144,7 @@ class EsIndex extends Component {
         })
 
         var rateColumn = column_meta['rate'].map(col => {
-            return <TableHeaderColumn dataField={col} dataSort={true} dataFormat={this.chartFormatter} sortFunc={this.ratingSort}>{col}</TableHeaderColumn>
+            return <TableHeaderColumn width="180px" dataField={col} dataSort={true} dataFormat={this.chartFormatter} sortFunc={this.ratingSort}>{col}</TableHeaderColumn>
         })
 
         var otherColumn = column_meta['others'].map(col => {

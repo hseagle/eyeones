@@ -66,9 +66,9 @@ class EsShard extends Component {
 
     chartFormatter(cell, row) {
         return (<div><strong>{cell.slice(-1)[0]}</strong>&nbsp;&nbsp;<Sparklines data={cell} limit={20} height={30}>
-            <SparklinesLine style={{stroke: "blue", strokeWidth: 3, fill: "none"}} />
-            <SparklinesSpots style={{ fill: "red"  }} />
-            <SparklinesReferenceLine type="mean" style={{stroke: "green", strokeWidth: 5, strokeDasharray: '2,2'}}/>
+            <SparklinesLine style={{stroke: "LightSkyBlue", strokeWidth: 3, fill: "none"}} />
+            <SparklinesSpots style={{ fill: "DarkOrange"  }} />
+            <SparklinesReferenceLine type="mean" style={{stroke: "green", strokeWidth: 4, strokeDasharray: '2,2'}}/>
         </Sparklines></div>)
     }
 
@@ -144,7 +144,7 @@ class EsShard extends Component {
         })
 
         var rateColumn = column_meta['rate'].map(col => {
-            return <TableHeaderColumn dataField={col} dataSort={true} dataFormat={this.chartFormatter} sortFunc={this.ratingSort}>{col}</TableHeaderColumn>
+            return <TableHeaderColumn dataField={col} width='150px' dataSort={true} dataFormat={this.chartFormatter} sortFunc={this.ratingSort}>{col}</TableHeaderColumn>
         })
 
         var otherColumn = column_meta['others'].map(col => {
