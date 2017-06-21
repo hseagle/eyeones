@@ -124,8 +124,9 @@ class Home extends Component {
         }
 
         nodes.forEach(node => {
-            var timeSeries = node.timestamp.sort((a,b) => (a>b))
+            var timeSeries = node.timestamp.sort((a,b) => a - b)
             var timeDiffs = timeSeries.slice(1).map((val, idx) => { return Math.ceil((val - timeSeries[idx]) / 1000) })
+
 
             var rate_meta = [
                 { source_field: 'indexing.index_total', target_field: 'indexing' },
@@ -133,10 +134,12 @@ class Home extends Component {
             ]
 
             rate_meta.forEach(item => {
-                var series = node[item.source_field]
+                var series = node[item.source_field].map(val => Number(val))
+
                 var rates = series.slice(1).map((val, idx) => {
                     return Math.ceil((val - series[idx]) / timeDiffs[idx])
                 })
+
                 node[item.target_field] = rates
             })
         })
