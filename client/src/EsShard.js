@@ -140,7 +140,7 @@ class EsShard extends Component {
         }
 
         var keyColumn = column_meta['key'].map(col => {
-            return <TableHeaderColumn isKey hidden dataField={col} width='220px'>{col}</TableHeaderColumn>
+            return <TableHeaderColumn isKey hidden dataField={col} width='250px'>{col}</TableHeaderColumn>
         })
 
         var rateColumn = column_meta['rate'].map(col => {

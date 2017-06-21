@@ -140,7 +140,7 @@ class EsIndex extends Component {
         }
 
         var keyColumn = column_meta['key'].map(col => {
-            return <TableHeaderColumn isKey dataField={col} dataFormat={this.indexFormatter} width='220px'>{col}</TableHeaderColumn>
+            return <TableHeaderColumn isKey dataField={col} dataFormat={this.indexFormatter} width='250px'>{col}</TableHeaderColumn>
         })
 
         var rateColumn = column_meta['rate'].map(col => {
