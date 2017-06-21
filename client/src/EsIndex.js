@@ -120,7 +120,7 @@ class EsIndex extends Component {
             var timeSeries = index.timestamp
             var timeDiffs = timeSeries.slice(1).map((val,idx) => { return Math.ceil((val - timeSeries[idx])/1000) })
 
-            var rate_meta = [ 
+            var rate_meta = [
                 {source_field: 'indexing.index_total', target_field:'indexing'},
                 {source_field: 'search.query_total', target_field:'search'}
                 ]
@@ -140,7 +140,7 @@ class EsIndex extends Component {
         }
 
         var keyColumn = column_meta['key'].map(col => {
-            return <TableHeaderColumn isKey dataField={col} dataFormat={this.indexFormatter} width='250px'>{col}</TableHeaderColumn>
+            return <TableHeaderColumn isKey dataField={col} dataFormat={this.indexFormatter} width='280px'>{col}</TableHeaderColumn>
         })
 
         var rateColumn = column_meta['rate'].map(col => {
@@ -150,7 +150,7 @@ class EsIndex extends Component {
         var otherColumn = column_meta['others'].map(col => {
             var displayName = col
             if ( col.includes("fielddata") ) displayName = 'fielddata'
-            return <TableHeaderColumn dataSort={true} dataField={col} sortFunc={this.numericSortFunc}>{displayName}</TableHeaderColumn>
+            return <TableHeaderColumn dataSort={true} dataField={col} width='120px' sortFunc={this.numericSortFunc}>{displayName}</TableHeaderColumn>
         })
 
         var columns = keyColumn.concat(rateColumn).concat(otherColumn)

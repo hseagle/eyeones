@@ -28,4 +28,3 @@ npm install json-server
 ## screenshots
 
 ![eyeones screenshot](./images/eyeones.png)
-

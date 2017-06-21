@@ -52,8 +52,8 @@ class EsNodeDetail extends Component {
         var nodeStats = this.state.nodestats
 
         var timeSeries = nodeStats.map(item => { return item.timestamp})
-        
-        const memoryConverter = (unit, sizeInBytes) => { 
+
+        const memoryConverter = (unit, sizeInBytes) => {
             var sizeMap = {
                 kb: {coefficient: 1024**1},
                 mb: {coefficient: 1024**2},
@@ -77,6 +77,7 @@ class EsNodeDetail extends Component {
             { name: 'fielddata', path: 'indices.fielddata.memory_size_in_bytes', series: [],isRate: false, convertFunc: memoryConverter.bind(null,'mb') },
             { name: 'segments', path: 'indices.segments.count', series: [], isRate:false },
             { name: 'heap', path: 'jvm.mem.heap_used_in_bytes', series: [], isRate:false, convertFunc: memoryConverter.bind(null,'gb') },
+            { name: 'threads', path: 'jvm.threads.count', series: [], isRate:false},
             { name: 'write_operations', path: 'fs.io_stats.total.write_operations', series: [], isRate: true },
             { name: 'read_operations', path: 'fs.io_stats.total.read_operations', series: [], isRate: true }
         ]
@@ -89,7 +90,7 @@ class EsNodeDetail extends Component {
             var series = metrics.forEach(metric => {
                 var targetPath = "item." + metric.path
                 var rawValue =  eval(targetPath)
-              
+
                 metricJson[metric.name] = rawValue
                 //caculating the rates
                 metricJson['hasRate'] = metric.isRate
@@ -104,15 +105,15 @@ class EsNodeDetail extends Component {
                     }
                 }
             })
-           
+
             chartData.push(metricJson)
         })
 
         console.log(chartData)
-        
+
         const dateFormat = (time) => { return moment(time).format('HH:mm:ss') }
-        
-            
+
+
         var rateCharts = metrics.filter( item=> item.isRate == true).map( metric => {
             var graphData = chartData.slice(1)
             var rateName = metric.name + "_rate"
@@ -121,8 +122,8 @@ class EsNodeDetail extends Component {
                 return metric.convertFunc(value)
                 else
                 return value
-            }    
-            
+            }
+
             return (<div className="col-lg-6">
                     <ResponsiveContainer width='100%' aspect={6.0/1.5}>
                     <LineChart data={chartData.slice(1)}
@@ -132,7 +133,7 @@ class EsNodeDetail extends Component {
                         <CartesianGrid strokeDasharray="3 3" />
                         <Tooltip />
                         <Legend verticalAlign="top"/>
-                        <Line type="monotone" dataKey={rateName} stroke="blue" fillOpacity={1} fill="Coral" isAnimationActive={false} />
+                        <Line type="monotone" dataKey={rateName} stroke="ForestGreen" fillOpacity={1} fill="Tomato" isAnimationActive={false} />
                     </LineChart>
                     </ResponsiveContainer>
                     </div>)
@@ -165,7 +166,7 @@ class EsNodeDetail extends Component {
                         <CartesianGrid strokeDasharray="3 3" />
                         <Tooltip />
                         <Legend verticalAlign="top"/>
-                        <Area type="monotone" dataKey={metric.name} stroke="#8884d8" fillOpacity={1} fill="url(#colorUv)" />
+                        <Area type="monotone" dataKey={metric.name} stroke="MediumSeaGreen" fillOpacity={1} fill="url(#colorPv)" />
                     </AreaChart>
                     </ResponsiveContainer>
                     </div>)

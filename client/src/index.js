@@ -10,5 +10,5 @@ import loki from 'lokijs'
 //http://codepen.io/pshrmn/pen/YZXZqM
 
 ReactDOM.render(
-	<App esaddr={esServerAddr} />,
+	<App />,
 	document.getElementById('root'))
