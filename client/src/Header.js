@@ -83,8 +83,10 @@ class Header extends Component {
             <a className="navbar-brand" href="#">ESMON</a>
           </div>
           <div id="rightnavbar" className="navbar-collapse collapse">
+            <ul className="nav navbar-nav">
+              <li><a href="#"><strong>{this.state.clusterName}</strong></a></li>
+            </ul>
             <ul className="nav navbar-nav navbar-right">
-              <li><a href="#">{this.state.clusterName}</a></li>
               <li>
                 <a href="#">
                   <span className={labelTypes[clusterStatus]}>
@@ -92,13 +94,23 @@ class Header extends Component {
                   </span>
                 </a>
               </li>
-              <li>
-                <a href="#">
+              <li className="dropdown">
+                <a href="#" className="dropdown-toggle" data-toggle="dropdown">
                   <i className="fa fa-envelope-o" />
                   <span className="badge-number label label-warning">
                     {this.state.statusChanged}
                   </span>
                 </a>
+                {/*}
+                <ul className="dropdown-menu" role="menu">
+            <li><a href="#">Action</a></li>
+            <li><a href="#">Another action</a></li>
+            <li><a href="#">Something else here</a></li>
+            <li className="divider"></li>
+            <li><a href="#">Separated link</a></li>
+            <li className="divider"></li>
+            <li><a href="#">One more separated link</a></li>
+          </ul>{*/}
               </li>
               <li>
                 <a href="#">

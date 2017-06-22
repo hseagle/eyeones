@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "admin-lte": "^2.3.11",
     "axios": "^0.16.1",
     "bootstrap": "^3.3.7",
     "highcharts": "^5.0.11",

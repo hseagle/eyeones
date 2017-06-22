@@ -13,8 +13,6 @@ class EsIndex extends Component {
     constructor() {
         super();
         this._nodes = [];
-        this._heapHistoryData = [];
-        this._cpuHistoryData = [];
         this.state = { nodes: this._nodes };
         this.setState({ nodes: this._nodes, toggleUpdate: false, page: 1, sizePerPage: 20 });
     }
@@ -24,7 +22,6 @@ class EsIndex extends Component {
     }
 
     componentDidMount() {
-        $('.dynamicsparkline').sparkline('html');
         this.timerID = setInterval(() => this.tick(), 10000)
     }
 
@@ -36,7 +33,6 @@ class EsIndex extends Component {
         var self = this
         axios.get("/indices").then(response => {
             var nodesInfo = response.data
-            console.log(nodesInfo)
             self.setState({ nodes: nodesInfo })
         })
     }
@@ -50,8 +46,6 @@ class EsIndex extends Component {
     }
 
     componentDidUpdate() {
-        console.log("Home componentDidUpdate is called")
-        $('.dynamicsparkline').sparkline('html');
     }
 
     ratingSort(a, b, order, sortField) {
@@ -133,10 +127,27 @@ class EsIndex extends Component {
             })
         })
 
+        const byteConverter = (sizeUnit, val) => {
+          console.log(`sizeUnit ${sizeUnit} val ${val}`)
+          var convertingMap = {
+            mb: 1,
+            gb: 1024,
+            tb: 1024**2
+          }
+          return Math.ceil(val/convertingMap[sizeUnit])
+        }
+
         var column_meta = {
             'key': ['index'],
             'rate': ['indexing', 'search'],
-            'others': ['memory.total', 'pri', 'rep','fielddata.memory_size','docs.count','store.size']
+            'others': [
+              {name:'memory.total', displayname: 'memory', sizeUnit: 'mb', unitConverter: byteConverter.bind(null,'mb')},
+              {name:'pri', displayname: 'pri'},
+              {name:'rep', displayname: 'rep'},
+              {name:'fielddata.memory_size',displayname: 'fielddata', sizeUnit: 'mb', unitConverter: byteConverter.bind(null,'mb')},
+              {name:'docs.count', displayname: 'docs'},
+              {name:'store.size', displayname: 'store', sizeUnit:'gb',unitConverter: byteConverter.bind(null,'gb')}
+            ]
         }
 
         var keyColumn = column_meta['key'].map(col => {
@@ -147,10 +158,12 @@ class EsIndex extends Component {
             return <TableHeaderColumn width="180px" dataField={col} dataSort={true} dataFormat={this.chartFormatter} sortFunc={this.ratingSort}>{col}</TableHeaderColumn>
         })
 
-        var otherColumn = column_meta['others'].map(col => {
-            var displayName = col
-            if ( col.includes("fielddata") ) displayName = 'fielddata'
-            return <TableHeaderColumn dataSort={true} dataField={col} width='120px' sortFunc={this.numericSortFunc}>{displayName}</TableHeaderColumn>
+        var otherColumn = column_meta['others'].map(item => {
+          var displayedName = item.displayname
+          if ( item.sizeUnit ) {
+            displayedName = `${displayedName}(${item.sizeUnit.toUpperCase()})`
+          }
+            return <TableHeaderColumn dataSort={true}  dataFormat={item.unitConverter} dataField={item.name} width='120px' sortFunc={this.numericSortFunc}>{displayedName}</TableHeaderColumn>
         })
 
         var columns = keyColumn.concat(rateColumn).concat(otherColumn)
